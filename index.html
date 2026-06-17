@@ -8,6 +8,11 @@
         margin: 10px;
         background: #f9f9f9;
         display: flex;
+        justify-content: center;
+      }
+
+      .app {
+        display: flex;
         flex-direction: column;
         align-items: center;
       }
@@ -27,6 +32,7 @@
       .main {
         display: flex;
         gap: 12px;
+        align-items: flex-start;
       }
 
       .tools {
@@ -87,66 +93,55 @@
         border-color: black;
         border-width: 2px;
       }
+
     </style>
   </head>
   <body>
-    <h1>Lua Pixel Art Editor</h1>
+    <div class="app">
+      <h1>Lua Pixel Art Editor</h1>
 
-    <div class="top-bar">
-      <label
-        >Grid size:
-        <select id="grid-size">
-          <option value="8">8x8</option>
-          <option value="16">16x16</option>
-          <option value="32" selected>32x32</option>
-          <option value="48">48x48</option>
-          <option value="64">64x64</option>
-        </select>
-      </label>
+      <div class="top-bar">
+        <label>Grid size:
+          <select id="grid-size">
+            <option value="8">8x8</option>
+            <option value="16">16x16</option>
+            <option value="32" selected>32x32</option>
+            <option value="48">48x48</option>
+            <option value="64">64x64</option>
+          </select>
+        </label>
 
-      <button onclick="undoAction()">↩ Undo</button>
-      <button onclick="redoAction()">↪ Redo</button>
-      <button onclick="clearCanvas()">🗑 Clear</button>
-    </div>
-
-    <div class="main">
-      <div class="tools">
-        <p style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0">
-          Tools
-        </p>
-        <button class="active" id="btn-pencil" onclick="selectTool('pencil')">
-          ✏ Pencil
-        </button>
-        <button id="btn-eraser" onclick="selectTool('eraser')">◻ Eraser</button>
-        <p style="font-size: 11px; color: gray; margin: 4px 0 0 0">
-          P / E keys
-        </p>
+        <button onclick="undoAction()">↩ Undo</button>
+        <button onclick="redoAction()">↪ Redo</button>
+        <button onclick="clearCanvas()">🗑 Clear</button>
       </div>
 
-      <div>
-        <canvas id="canvas"></canvas>
-      </div>
-
-      <div class="right-panel">
-        <h3>Color</h3>
-        <div class="color-row">
-          <div id="current-color-box"></div>
-          <div>
-            <input type="color" id="color-picker" value="#000000" /><br />
-            <input
-              type="text"
-              id="hex-input"
-              value="#000000"
-              style="width: 75px; font-size: 12px; margin-top: 3px"
-            />
-          </div>
+      <div class="main">
+        <div class="tools">
+          <p style="font-size: 12px; font-weight: bold; margin: 0 0 5px 0">Tools</p>
+          <button class="active" id="btn-pencil" onclick="selectTool('pencil')">✏ Pencil</button>
+          <button id="btn-eraser" onclick="selectTool('eraser')">◻ Eraser</button>
+          <p style="font-size: 11px; color: gray; margin: 4px 0 0 0">P / E keys</p>
         </div>
 
-        <h3>Colors</h3>
-        <div
-          id="quick-colors"
-          style="display: flex; gap: 4px; flex-wrap: wrap"
-        ></div>
+        <div>
+          <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="right-panel">
+          <h3>Color</h3>
+          <div class="color-row">
+            <div id="current-color-box"></div>
+            <div>
+              <input type="color" id="color-picker" value="#000000" /><br />
+              <input type="text" id="hex-input" value="#000000" style="width: 75px; font-size: 12px; margin-top: 3px" />
+            </div>
+          </div>
+
+          <h3>Colors</h3>
+          <div id="quick-colors" style="display: flex; gap: 4px; flex-wrap: wrap"></div>
+        </div>
+
       </div>
     </div>
 
@@ -184,10 +179,7 @@
         var ck = Math.max(4, Math.floor(zoom / 2));
         for (var y = 0; y < size; y += ck) {
           for (var x = 0; x < size; x += ck) {
-            ctx.fillStyle =
-              (Math.floor(x / ck) + Math.floor(y / ck)) % 2 === 0
-                ? "#ddd"
-                : "#ccc";
+            ctx.fillStyle = (Math.floor(x / ck) + Math.floor(y / ck)) % 2 === 0 ? "#ddd" : "#ccc";
             ctx.fillRect(x, y, ck, ck);
           }
         }
@@ -202,15 +194,12 @@
         }
       }
 
+
       function getPos(e) {
         var rect = canvas.getBoundingClientRect();
         return {
-          x: Math.floor(
-            ((e.clientX - rect.left) * canvas.width) / rect.width / zoom,
-          ),
-          y: Math.floor(
-            ((e.clientY - rect.top) * canvas.height) / rect.height / zoom,
-          ),
+          x: Math.floor(((e.clientX - rect.left) * canvas.width) / rect.width / zoom),
+          y: Math.floor(((e.clientY - rect.top) * canvas.height) / rect.height / zoom),
         };
       }
 
@@ -219,11 +208,7 @@
       }
 
       function saveState() {
-        undoStack.push(
-          pixels.map(function (row) {
-            return row.slice();
-          }),
-        );
+        undoStack.push(pixels.map(function (row) { return row.slice(); }));
         if (undoStack.length > 80) undoStack.shift();
         redoStack = [];
       }
@@ -252,9 +237,7 @@
         drawing = false;
       });
 
-      canvas.addEventListener("contextmenu", function (e) {
-        e.preventDefault();
-      });
+      canvas.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
       function setColor(hex) {
         color = hex;
@@ -263,62 +246,44 @@
         document.getElementById("current-color-box").style.background = hex;
       }
 
-      document
-        .getElementById("color-picker")
-        .addEventListener("input", function (e) {
-          setColor(e.target.value);
-        });
+      document.getElementById("color-picker").addEventListener("input", function (e) {
+        setColor(e.target.value);
+      });
 
-      document
-        .getElementById("hex-input")
-        .addEventListener("change", function (e) {
-          var v = e.target.value.trim();
-          if (!v.startsWith("#")) v = "#" + v;
-          if (/^#[0-9a-fA-F]{6}$/.test(v)) setColor(v);
-        });
+      document.getElementById("hex-input").addEventListener("change", function (e) {
+        var v = e.target.value.trim();
+        if (!v.startsWith("#")) v = "#" + v;
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) setColor(v);
+      });
 
-      ["#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff"].forEach(
-        function (c) {
-          var d = document.createElement("div");
-          d.className = "palette-color";
-          d.style.background = c;
-          d.style.width = "24px";
-          d.style.height = "24px";
-          d.title = c;
-          d.addEventListener("click", function () {
-            setColor(c);
-          });
-          document.getElementById("quick-colors").appendChild(d);
-        },
-      );
+      ["#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff"].forEach(function (c) {
+        var d = document.createElement("div");
+        d.className = "palette-color";
+        d.style.background = c;
+        d.style.width = "24px";
+        d.style.height = "24px";
+        d.title = c;
+        d.addEventListener("click", function () { setColor(c); });
+        document.getElementById("quick-colors").appendChild(d);
+      });
 
       function selectTool(name) {
         tool = name;
-        document.querySelectorAll(".tools button").forEach(function (b) {
-          b.classList.remove("active");
-        });
+        document.querySelectorAll(".tools button").forEach(function (b) { b.classList.remove("active"); });
         var btn = document.getElementById("btn-" + name);
         if (btn) btn.classList.add("active");
       }
 
       function undoAction() {
         if (!undoStack.length) return;
-        redoStack.push(
-          pixels.map(function (r) {
-            return r.slice();
-          }),
-        );
+        redoStack.push(pixels.map(function (r) { return r.slice(); }));
         pixels = undoStack.pop();
         draw();
       }
 
       function redoAction() {
         if (!redoStack.length) return;
-        undoStack.push(
-          pixels.map(function (r) {
-            return r.slice();
-          }),
-        );
+        undoStack.push(pixels.map(function (r) { return r.slice(); }));
         pixels = redoStack.pop();
         draw();
       }
@@ -327,36 +292,27 @@
         if (!confirm("Clear everything?")) return;
         saveState();
         for (var y = 0; y < gridSize; y++)
-          for (var x = 0; x < gridSize; x++) pixels[y][x] = null;
+          for (var x = 0; x < gridSize; x++)
+            pixels[y][x] = null;
         draw();
       }
 
-      document
-        .getElementById("grid-size")
-        .addEventListener("change", function (e) {
-          if (!confirm("Change grid size? This will clear the canvas.")) {
-            e.target.value = gridSize;
-            return;
-          }
-          initPixels(parseInt(e.target.value));
-          draw();
-        });
+      document.getElementById("grid-size").addEventListener("change", function (e) {
+        if (!confirm("Change grid size? This will clear the canvas.")) {
+          e.target.value = gridSize;
+          return;
+        }
+        initPixels(parseInt(e.target.value));
+        draw();
+      });
 
       document.addEventListener("keydown", function (e) {
         if (e.target.tagName === "INPUT") return;
         var k = e.key.toLowerCase();
         if (k === "p") selectTool("pencil");
         else if (k === "e") selectTool("eraser");
-        else if (k === "z" && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
-          e.preventDefault();
-          undoAction();
-        } else if (
-          (k === "y" || (k === "z" && e.shiftKey)) &&
-          (e.ctrlKey || e.metaKey)
-        ) {
-          e.preventDefault();
-          redoAction();
-        }
+        else if (k === "z" && (e.ctrlKey || e.metaKey) && !e.shiftKey) { e.preventDefault(); undoAction(); }
+        else if ((k === "y" || (k === "z" && e.shiftKey)) && (e.ctrlKey || e.metaKey)) { e.preventDefault(); redoAction(); }
       });
 
       initPixels(32);
@@ -364,3 +320,99 @@
     </script>
   </body>
 </html>
+
+<!--
+# Lua Pixel Art Editor
+
+A lightweight, browser-based pixel art editor — no installation, no dependencies, just open the HTML file and start drawing.
+
+---
+
+## Features
+
+### Drawing Tools
+- **Pencil** — draw pixels one by one or drag to paint freely
+- **Eraser** — remove pixels by clicking or dragging
+
+### Grid Sizes
+Choose between **8×8**, **16×16**, **32×32** (default), **48×48**, and **64×64** grids depending on how detailed you want your artwork.
+
+### Color Picker
+- Native **color picker** input for full color selection
+- **Hex input field** — type any hex code directly (e.g. `#ff6600`)
+- **Current color preview** box always visible
+- **Quick color palette** with 5 preset colors (black, white, red, green, blue)
+
+### Undo / Redo
+- **Undo** (↩) — go back up to 80 steps
+- **Redo** (↪) — restore undone actions
+- History is reset when the grid size changes
+
+### Canvas
+- Checkerboard background to visualize transparent pixels
+- Canvas scales automatically with the selected grid size
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `P` | Switch to Pencil |
+| `E` | Switch to Eraser |
+| `Ctrl + Z` | Undo |
+| `Ctrl + Y` / `Ctrl + Shift + Z` | Redo |
+
+> Shortcuts are disabled when typing inside an input field.
+
+---
+
+## How to Use
+
+1. Open `index.html` in any modern browser
+2. Select a grid size from the dropdown
+3. Pick a color using the color picker or type a hex code
+4. Choose a tool (Pencil or Eraser)
+5. Click or drag on the canvas to draw
+6. Use Undo / Redo to fix mistakes
+7. Click 🗑 **Clear** to reset the canvas (asks for confirmation)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Markup | HTML5 |
+| Styling | CSS3 (vanilla, no framework) |
+| Logic | JavaScript (vanilla ES5/ES6) |
+| Rendering | HTML5 Canvas API |
+
+No build step, no npm, no bundler — a single self-contained file.
+
+---
+
+## Project Structure
+
+```
+lua/
+└── index.html   # entire app — markup, styles, and logic in one file
+```
+
+---
+
+## Roadmap / Ideas
+
+- [ ] Export as PNG
+- [ ] Fill bucket tool
+- [ ] Color history / recently used colors display
+- [ ] Save / load from localStorage
+- [ ] Zoom in / out
+- [ ] Symmetry mode
+
+---
+
+## License
+
+MIT — do whatever you want with it.
+-->
