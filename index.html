@@ -110,7 +110,6 @@
         gap: 3px;
         margin-bottom: 10px;
       }
-
     </style>
   </head>
   <body>
@@ -128,7 +127,7 @@
         </select>
       </label>
 
-<button onclick="undoAction()">↩ Undo</button>
+      <button onclick="undoAction()">↩ Undo</button>
       <button onclick="redoAction()">↪ Redo</button>
       <button onclick="clearCanvas()">🗑 Clear</button>
     </div>
@@ -167,8 +166,10 @@
         </div>
 
         <h3>Colors</h3>
-        <div id="quick-colors" style="display:flex; gap:4px; flex-wrap:wrap;"></div>
-
+        <div
+          id="quick-colors"
+          style="display: flex; gap: 4px; flex-wrap: wrap"
+        ></div>
       </div>
     </div>
 
@@ -199,7 +200,6 @@
         redoStack = [];
       }
 
-
       function draw(extra) {
         var size = gridSize * zoom;
         canvas.width = size;
@@ -225,8 +225,6 @@
             }
           }
         }
-
-
       }
 
       function getPos(e) {
@@ -253,8 +251,6 @@
         if (undoStack.length > 80) undoStack.shift();
         redoStack = [];
       }
-
-
 
       canvas.addEventListener("mousedown", function (e) {
         if (e.button !== 0) return;
@@ -343,16 +339,24 @@
           if (/^#[0-9a-fA-F]{6}$/.test(v)) setColor(v);
         });
 
-      var QUICK_COLORS = ["#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff"];
+      var QUICK_COLORS = [
+        "#000000",
+        "#ffffff",
+        "#ff0000",
+        "#00ff00",
+        "#0000ff",
+      ];
       var qc = document.getElementById("quick-colors");
-      QUICK_COLORS.forEach(function(c) {
+      QUICK_COLORS.forEach(function (c) {
         var d = document.createElement("div");
         d.className = "palette-color";
         d.style.background = c;
         d.style.width = "24px";
         d.style.height = "24px";
         d.title = c;
-        d.addEventListener("click", function() { setColor(c); });
+        d.addEventListener("click", function () {
+          setColor(c);
+        });
         qc.appendChild(d);
       });
 
@@ -398,7 +402,6 @@
         draw();
       }
 
-
       document
         .getElementById("grid-size")
         .addEventListener("change", function (e) {
@@ -409,7 +412,6 @@
           initPixels(parseInt(e.target.value));
           draw();
         });
-
 
       document.addEventListener("keydown", function (e) {
         if (e.target.tagName === "INPUT") return;
