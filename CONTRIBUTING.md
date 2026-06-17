@@ -16,4 +16,4 @@
 
 ## Keep it simple
 
-The whole app is one HTML file — keep it that way. No build steps, no dependencies.
+The whole app is one HTML file, keep it that way.

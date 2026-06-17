@@ -2,6 +2,8 @@
 
 A really simple, browser-based pixel art editor
 
+![preview](preview.png)
+
 ---
 
 ## Features
