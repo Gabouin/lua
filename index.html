@@ -47,10 +47,6 @@
         font-weight: bold;
       }
 
-      hr {
-        margin: 8px 0;
-      }
-
       canvas {
         border: 2px solid black;
         cursor: crosshair;
@@ -80,13 +76,6 @@
         background: black;
       }
 
-      .palette {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 3px;
-        margin-bottom: 10px;
-      }
-
       .palette-color {
         width: 17px;
         height: 17px;
@@ -97,18 +86,6 @@
       .palette-color:hover {
         border-color: black;
         border-width: 2px;
-      }
-
-      .palette-color.selected {
-        border: 2px solid black;
-        outline: 1px solid red;
-      }
-
-      .recent {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 3px;
-        margin-bottom: 10px;
       }
     </style>
   </head>
@@ -182,7 +159,6 @@
       var drawing = false;
       var undoStack = [];
       var redoStack = [];
-      var recent = [];
 
       var canvas = document.getElementById("canvas");
       var ctx = canvas.getContext("2d");
@@ -200,7 +176,7 @@
         redoStack = [];
       }
 
-      function draw(extra) {
+      function draw() {
         var size = gridSize * zoom;
         canvas.width = size;
         canvas.height = size;
@@ -216,11 +192,10 @@
           }
         }
 
-        var src = extra || pixels;
         for (var row = 0; row < gridSize; row++) {
           for (var col = 0; col < gridSize; col++) {
-            if (src[row][col]) {
-              ctx.fillStyle = src[row][col];
+            if (pixels[row][col]) {
+              ctx.fillStyle = pixels[row][col];
               ctx.fillRect(col * zoom, row * zoom, zoom, zoom);
             }
           }
@@ -244,48 +219,37 @@
       }
 
       function saveState() {
-        var copy = pixels.map(function (row) {
-          return row.slice();
-        });
-        undoStack.push(copy);
+        undoStack.push(
+          pixels.map(function (row) {
+            return row.slice();
+          }),
+        );
         if (undoStack.length > 80) undoStack.shift();
         redoStack = [];
+      }
+
+      function paint(p) {
+        if (!inBounds(p.x, p.y)) return;
+        pixels[p.y][p.x] = tool === "pencil" ? color : null;
+        draw();
       }
 
       canvas.addEventListener("mousedown", function (e) {
         if (e.button !== 0) return;
         var p = getPos(e);
         if (!inBounds(p.x, p.y)) return;
-
         saveState();
         drawing = true;
-
-        if (tool === "pencil") {
-          pixels[p.y][p.x] = color;
-          draw();
-        } else if (tool === "eraser") {
-          pixels[p.y][p.x] = null;
-          draw();
-        }
+        paint(p);
       });
 
       canvas.addEventListener("mousemove", function (e) {
-        var p = getPos(e);
-        if (!drawing || !inBounds(p.x, p.y)) return;
-
-        if (tool === "pencil") {
-          pixels[p.y][p.x] = color;
-          draw();
-        } else if (tool === "eraser") {
-          pixels[p.y][p.x] = null;
-          draw();
-        }
+        if (!drawing) return;
+        paint(getPos(e));
       });
 
       document.addEventListener("mouseup", function () {
-        if (!drawing) return;
         drawing = false;
-        addRecent(color);
       });
 
       canvas.addEventListener("contextmenu", function (e) {
@@ -297,33 +261,6 @@
         document.getElementById("color-picker").value = hex;
         document.getElementById("hex-input").value = hex;
         document.getElementById("current-color-box").style.background = hex;
-        document.querySelectorAll(".palette-color").forEach(function (el) {
-          el.classList.toggle("selected", el.dataset.color === hex);
-        });
-      }
-
-      function addRecent(hex) {
-        recent = recent.filter(function (c) {
-          return c !== hex;
-        });
-        recent.unshift(hex);
-        recent = recent.slice(0, 14);
-        renderRecent();
-      }
-
-      function renderRecent() {
-        var el = document.getElementById("recent-colors");
-        el.innerHTML = "";
-        recent.forEach(function (c) {
-          var d = document.createElement("div");
-          d.className = "palette-color";
-          d.style.background = c;
-          d.title = c;
-          d.addEventListener("click", function () {
-            setColor(c);
-          });
-          el.appendChild(d);
-        });
       }
 
       document
@@ -331,6 +268,7 @@
         .addEventListener("input", function (e) {
           setColor(e.target.value);
         });
+
       document
         .getElementById("hex-input")
         .addEventListener("change", function (e) {
@@ -339,26 +277,20 @@
           if (/^#[0-9a-fA-F]{6}$/.test(v)) setColor(v);
         });
 
-      var QUICK_COLORS = [
-        "#000000",
-        "#ffffff",
-        "#ff0000",
-        "#00ff00",
-        "#0000ff",
-      ];
-      var qc = document.getElementById("quick-colors");
-      QUICK_COLORS.forEach(function (c) {
-        var d = document.createElement("div");
-        d.className = "palette-color";
-        d.style.background = c;
-        d.style.width = "24px";
-        d.style.height = "24px";
-        d.title = c;
-        d.addEventListener("click", function () {
-          setColor(c);
-        });
-        qc.appendChild(d);
-      });
+      ["#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff"].forEach(
+        function (c) {
+          var d = document.createElement("div");
+          d.className = "palette-color";
+          d.style.background = c;
+          d.style.width = "24px";
+          d.style.height = "24px";
+          d.title = c;
+          d.addEventListener("click", function () {
+            setColor(c);
+          });
+          document.getElementById("quick-colors").appendChild(d);
+        },
+      );
 
       function selectTool(name) {
         tool = name;
@@ -394,11 +326,8 @@
       function clearCanvas() {
         if (!confirm("Clear everything?")) return;
         saveState();
-        for (var y = 0; y < gridSize; y++) {
-          for (var x = 0; x < gridSize; x++) {
-            pixels[y][x] = null;
-          }
-        }
+        for (var y = 0; y < gridSize; y++)
+          for (var x = 0; x < gridSize; x++) pixels[y][x] = null;
         draw();
       }
 
@@ -435,3 +364,99 @@
     </script>
   </body>
 </html>
+
+<!--
+# Lua Pixel Art Editor
+
+A lightweight, browser-based pixel art editor — no installation, no dependencies, just open the HTML file and start drawing.
+
+---
+
+## Features
+
+### Drawing Tools
+- **Pencil** — draw pixels one by one or drag to paint freely
+- **Eraser** — remove pixels by clicking or dragging
+
+### Grid Sizes
+Choose between **8×8**, **16×16**, **32×32** (default), **48×48**, and **64×64** grids depending on how detailed you want your artwork.
+
+### Color Picker
+- Native **color picker** input for full color selection
+- **Hex input field** — type any hex code directly (e.g. `#ff6600`)
+- **Current color preview** box always visible
+- **Quick color palette** with 5 preset colors (black, white, red, green, blue)
+
+### Undo / Redo
+- **Undo** (↩) — go back up to 80 steps
+- **Redo** (↪) — restore undone actions
+- History is reset when the grid size changes
+
+### Canvas
+- Checkerboard background to visualize transparent pixels
+- Canvas scales automatically with the selected grid size
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `P` | Switch to Pencil |
+| `E` | Switch to Eraser |
+| `Ctrl + Z` | Undo |
+| `Ctrl + Y` / `Ctrl + Shift + Z` | Redo |
+
+> Shortcuts are disabled when typing inside an input field.
+
+---
+
+## How to Use
+
+1. Open `index.html` in any modern browser
+2. Select a grid size from the dropdown
+3. Pick a color using the color picker or type a hex code
+4. Choose a tool (Pencil or Eraser)
+5. Click or drag on the canvas to draw
+6. Use Undo / Redo to fix mistakes
+7. Click 🗑 **Clear** to reset the canvas (asks for confirmation)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Markup | HTML5 |
+| Styling | CSS3 (vanilla, no framework) |
+| Logic | JavaScript (vanilla ES5/ES6) |
+| Rendering | HTML5 Canvas API |
+
+No build step, no npm, no bundler — a single self-contained file.
+
+---
+
+## Project Structure
+
+```
+lua/
+└── index.html   # entire app — markup, styles, and logic in one file
+```
+
+---
+
+## Roadmap / Ideas
+
+- [ ] Export as PNG
+- [ ] Fill bucket tool
+- [ ] Color history / recently used colors display
+- [ ] Save / load from localStorage
+- [ ] Zoom in / out
+- [ ] Symmetry mode
+
+---
+
+## License
+
+MIT — do whatever you want with it.
+-->
