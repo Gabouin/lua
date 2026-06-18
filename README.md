@@ -26,8 +26,8 @@ Choose between **8×8**, **16×16**, **32×32** (default), **48×48**, and **64�
 
 ### Undo / Redo
 
-- **Undo** (↩) : go back up to 80 steps
-- **Redo** (↪) : restore undone actions
+- **Undo** : go back up to 80 steps
+- **Redo** : restore undone actions
 - History is reset when the grid size changes
 
 ### Canvas
